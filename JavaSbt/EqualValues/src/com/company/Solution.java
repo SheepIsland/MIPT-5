@@ -5,6 +5,7 @@ package com.company;
  */
 
 import java.io.*;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
@@ -15,7 +16,7 @@ public class Solution {
         TreeMap<String, Integer> map = new TreeMap<>();
         int max = 0;
 
-        Scanner scanner = new Scanner(new File("/Users/Violetta/IdeaProjects/EqualValues/src/com/company/input.txt"));
+        Scanner scanner = new Scanner(new File("input.txt"));
         while (scanner.hasNext()) {
             String nextWord = scanner.next().toLowerCase();
             Integer oldCount = map.get(nextWord);
@@ -28,15 +29,11 @@ public class Solution {
                 map.put(nextWord, oldCount +1);
         }
 
-        FileWriter fileWriter = new FileWriter("/Users/Violetta/IdeaProjects/EqualValues/src/com/company/output.txt");
-        for (String key : map.keySet()) {
-           if (map.get(key) == max) {
-             fileWriter.write(key+"\n");
-
-           }
+        for (Map.Entry<String, Integer> entry: map.entrySet()) {
+            if (entry.getValue() == max) {
+                System.out.println(entry.getKey());
+            }
         }
-
-        fileWriter.flush();
     }
 
 
