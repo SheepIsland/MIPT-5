@@ -3,6 +3,7 @@ package mipt.sbt;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Violetta on 17/10/2018.
@@ -26,8 +27,8 @@ public class BeanUtils {
      * @param from Object which properties will be used to get values.
      */
     public static void assign(Object from, Object to) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        ArrayList<String> getters = getGetters(from.getClass());
-        getters.retainAll(getSetters(to.getClass()));
+        List<String> getters = getNeededMethods(from.getClass(),"^get[A-Z].*", boolean voidReturn);
+        getters.retainAll(getNeededMethods(to.getClass(),"^set[A-Z].*"));
         for (String field: getters) {
             Method get = from.getClass().getMethod("get".concat(field));
             Method set = to.getClass().getMethod("set".concat(field),get.getReturnType());
@@ -35,34 +36,29 @@ public class BeanUtils {
         }
     }
 
-    private static ArrayList<String> getGetters(Class<?> clazz){
-        ArrayList<String> getters = new ArrayList<>();
+    private static List<String> getNeededMethods(Class<?> clazz, String pattern){
+        List<String> getters = new ArrayList<>();
         for (Method method: clazz.getMethods()){
-            if (isGetter(method)){
+            if (isMethod(method, pattern)){
                 getters.add(method.getName().substring(3,method.getName().length()));
             }
         }
         return getters;
     }
 
-    private static ArrayList<String> getSetters(Class<?> clazz){
-        ArrayList<String> setters = new ArrayList<>();
-        for (Method method: clazz.getMethods()){
-            if (isSetter(method)){
-                setters.add(method.getName().substring(3,method.getName().length()));
-            }
-        }
-        return setters;
+    private static boolean isMethod(Method method, String pattern, boolean voidReturn){
+        return  method.getParameterCount() == 1 && method.getName().matches(pattern) &&
+                method.getReturnType().equals(void.class);
     }
 
     private static boolean isSetter(Method method){
-        return  (method.getParameterCount() == 1)&&(method.getName().matches("^set[A-Z].*")) &&
-                (method.getReturnType().equals(void.class));
+        return  method.getParameterCount() == 1 && method.getName().matches("^set[A-Z].*") &&
+                method.getReturnType().equals(void.class);
     }
 
     private static boolean isGetter(Method method){
-        return  (method.getParameterCount() == 0)&&(method.getName().matches("^get[A-Z].*")) &&
-                (!method.getReturnType().equals(void.class));
+        return  method.getParameterCount() == 0 && method.getName().matches("^get[A-Z].*") &&
+                !method.getReturnType().equals(void.class);
     }
 
 }
